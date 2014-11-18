@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>Konkugames</title>
+    <?php
+    $this->jQuery()->addStylesheet('/js/jquery/jquery-ui-1.9.2/themes/base/jquery-ui.css')
+        ->setLocalPath('/js/jquery/jquery-ui-1.9.2/jquery-1.8.3.js')
+        ->setUiLocalPath('/js/jquery/jquery-ui-1.9.2/ui/minified/jquery-ui.min.js');
+    echo $this->jQuery();
+    ?>
+    <?php echo $this->headLink(); ?>
+    <script type="text/javascript" src="/js/jquery/jquery-ui-1.9.2/ui/minified/jquery-ui.min.js"></script>
+    <?php echo $this->headScript();?>
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
+    <script language="JavaScript" type="text/javascript" src="/js/jquery.colorbox-min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="/js/jquery-scripts.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700' rel='stylesheet' type='text/css' />
+    <link rel="stylesheet" href="/css/styles.css" type="text/css" media="screen" />
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"/></script>
+    <!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />-->
+
+        <script type="text/javascript" src="/js/swfobject.js"></script>
+    <style type="text/css">
+        body {
+            background-image: url('/images/tile-bg.png');
+            background-repeat: repeat;
+        }
+        .page{
+            width:1024px;
+            padding-left:50%;
+            margin-left:-512px;
+        }
+        .page .userBar{
+            background-color: #f8f8f8;
+            width:100%;
+            height: 50px;
+            box-shadow: 0px 0px 4px #000000;
+        }
+        .page .content{
+            width:100%;
+
+            box-shadow: 0px 0px 4px #000000;
+
+            background: #3e9ef2; /* Old browsers */
+            background: -moz-linear-gradient(-45deg, #3e9ef2 0%, #0562bf 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#3e9ef2), color-stop(100%,#0562bf)); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(-45deg, #3e9ef2 0%,#0562bf 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(-45deg, #3e9ef2 0%,#0562bf 100%); /* Opera 11.10+ */
+            background: -ms-linear-gradient(-45deg, #3e9ef2 0%,#0562bf 100%); /* IE10+ */
+            background: linear-gradient(135deg, #3e9ef2 0%,#0562bf 100%); /* W3C */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3e9ef2', endColorstr='#0562bf',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+        }
+        .userBar .logo{
+            float:left;
+            padding:5px;
+        }
+        .userBar .userInfo{
+            float:right;
+            padding:5px;
+            color:#888888;
+            font-size:14px;
+        }
+        .page .taskBar{
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            border-color: #4466aa;
+            height:30px;
+            width:100%;
+        }
+        .taskBar .tasks{
+            padding: 6px;
+            font-size: 14px;
+        }
+        .tasks a{
+            font-size:14px;
+            color:#ffffff;
+            margin-left:10px;
+            margin-right: 15px;
+        }
+        .tasks .active{
+            font-weight: bold;
+        }
+        .content .playArea{
+            width: 700px;
+
+            margin-left:auto;
+            margin-right:auto;
+            margin-top:100px;
+        }
+        .playArea .playBoard{
+            border-radius: 10px;
+            width:100%;
+            height: 100%;
+            box-shadow: 2px 2px 2px #003366;
+
+            background: #4aaaf0; /* Old browsers */
+            background: -moz-linear-gradient(-45deg, #4aaaf0 0%, #4a83dc 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#4aaaf0), color-stop(100%,#4a83dc)); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(-45deg, #4aaaf0 0%,#4a83dc 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(-45deg, #4aaaf0 0%,#4a83dc 100%); /* Opera 11.10+ */
+            background: -ms-linear-gradient(-45deg, #4aaaf0 0%,#4a83dc 100%); /* IE10+ */
+            background: linear-gradient(135deg, #4aaaf0 0%,#4a83dc 100%); /* W3C */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4aaaf0', endColorstr='#4a83dc',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+        }
+        .playBoard .gamelist{
+            margin-left: 40px;
+            padding-top: 40px;
+            width:620px;
+            height:100%;
+            overflow:hidden;
+        }
+        .playArea .categoriesBar{
+            height:65px;
+            width:100%;
+        }
+        .categoriesBar .categories{
+            float:left;
+            padding: 5px;
+        }
+        .categories img{
+            padding-right: 30px;
+        }
+        .categories img:not(.active){
+            opacity: 0.6;
+        }
+        .categories .mark{
+            width:45px;
+            height:4px;
+            background-color: #FFFFFF;
+            margin-left:-2px;
+        }
+        .content .rightBar {
+            float: right;
+            margin-top: -59%;
+            padding-right: 130px;
+        }
+        .myGames div{
+            position:relative;
+            margin-top:60px;
+        }
+        .gamelist .category{
+            position: relative;
+            display:none;
+        }
+        .myGames div img{
+            position:absolute;
+        }
+        .gamelist img{
+            position:absolute;
+        }
+        .puzzleIcon .loadingMask{
+            clip: rect(0px,200px,200px,0px);
+        }
+        .content .bottomImage{
+            width:1024px;
+            margin-top: 90px;
+        }
+
+
+        li { cursor: pointer;
+            background-color: #0398CA;}
+        tr{
+            margin-left:20px;
+            margin-top:20px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page">
+    <div class="userBar">
+        <img class="logo" src="/images/konku-logo.png" />
+        <div class="userInfo">
+            <img src="/images/device.png" />
+            <img src="/images/alerts.png" />
+            <img src="/images/profile.png" />
+            <img src="/images/arrow-down.png" />
+            Me
+        </div>
+    </div>
+    <div class="content">
+        <div class="taskBar">
+            <div class="tasks">
+                <a>Home</a>
+                <a>About</a>
+                <a>News</a>
+                <a>Contribute</a>
+                <a class="active">Play</a>
+            </div>
+        </div>
+        <div class="playArea">
+            <div class="playBoard">
+
+
+
+
+                <?php echo $this->layout()->content; ?>
+
+
+
+
+            </div>
+        </div>
+        <div class="rightBar">
+            <div class="myGames">
+
+            </div>
+        </div>
+        <img class="bottomImage" src="/images/pieces.png"/>
+    </div>
+</div>
+<style>
+    textarea{
+        width:550px;
+    }
+</style>
+<script>
+    $(".gamelist .listedGame").click(function(){
+        var newIcon = $(this).find(".puzzleIcon").clone();
+        newIcon.show();
+        var gameSlot = $(".content .myGames").find(".gameSlot.empty").first();
+        if(gameSlot.length > 0){
+            var newPosX = $(this).offset().left - gameSlot.offset().left;
+            var newPosY = $(this).offset().top - gameSlot.offset().top;
+            gameSlot.append(newIcon);
+            gameSlot.removeClass("empty").addClass("active");
+            newIcon.css({left:newPosX.toString()+"px",top:newPosY.toString()+"px"});
+            TweenLite.to(newIcon,.75, {top:"0px", left: "0px", opacity:1, zIndex: 100, onComplete:function(newIcon){
+                TweenLite.to(newIcon.find(".loadingMask"), 5, {clip: "rect(0px,200px,200px,91px)",onComplete:function(newIcon){
+                    newIcon.find(".loadingMask").remove();
+                    newIcon.append('<img src="/images/no_players_yet_puzzle.png" class="status"/>');
+                    newIcon.find(".status").first().remove();
+                    TweenLite.delayedCall(2, function(newIcon){
+                        newIcon.append('<img src="/images/waiting_puzzle.png" class="status"/>');
+                        newIcon.find(".status").first().remove();
+                        TweenLite.delayedCall(2, function(newIcon){
+                            newIcon.append('<img src="/images/ready_puzzle.png" class="status"/>');
+                            newIcon.find(".status").first().remove();
+                        }, [newIcon]);
+                    }, [newIcon]);
+                }, onCompleteParams:[newIcon]});
+            }, onCompleteParams:[newIcon]});
+        }
+    });
+
+    var lastCategory;
+    $(".categoriesBar .categories img").click(function(){
+        $(".categoriesBar .categories img").removeClass("active");
+        $(this).addClass("active");
+        var newPos = $(this).parent().position().left - $(this).position().left;
+        TweenLite.to($(".categoriesBar .categories .mark"),.75, {marginLeft:(-newPos - 7).toString()+"px"});
+        $(".gamelist .category").hide();
+        $(".gamelist .category").css({marginLeft:"0px", opacity:1});
+        var gameCategory = $(".gamelist").children().eq($(this).index());
+        gameCategory.show().css({opacity:0, marginLeft:"-700px"});
+        TweenLite.to(gameCategory,.75, {marginLeft:"0px", opacity: 1});
+        if(lastCategory){
+            lastCategory.show();
+            TweenLite.to(lastCategory,.75, {marginLeft:"700px", opacity: 0});
+        }
+        lastCategory = gameCategory;
+    });
+</script>
+<br><br><br><br><br><br><br><br>
+
+</body>
+</html>

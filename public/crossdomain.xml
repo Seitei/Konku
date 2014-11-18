@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- http://www.osmf.org/crossdomain.xml -->
+<cross-domain-policy>
+    <site-control permitted-cross-domain-policies="master-only"/>
+    <allow-access-from domain="*"/>
+    <allow-http-request-headers-from domain="*" headers="*"/>
+</cross-domain-policy>

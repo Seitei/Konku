@@ -1,0 +1,127 @@
+
+	<section class="contentAreaPanel" style="padding:30px;">
+			
+        <div class="whiteBox">
+        	<h2>Add/Edit games</h2>
+        	<div id="new Game">
+        		<button class="smallContent gameRowData button" id="addGame">Add New Game</button>
+        		<div id="newGameFormContainer" style="display:none"></div>
+        	</div>
+		  	<table cellspacing="0" cellpadding="0">
+		  		<thead>
+		  			<tr>
+	            		<td class="gameRowData title">Title</td>
+                        <td class="gameRowData title">Category</td>
+	            		<td class="gameRowData title">Codename</td>
+	            		<td class="gameRowData title">Version</td>
+	            		<td class="gameRowData title">Description</td>
+            		</tr>
+		  		</thead>
+				<?php if(count($this->games)>0): ?>
+			    	<?php foreach ($this->games as $game): ?>
+            			<tr id="gameRow_<?php echo $game->getId(); ?>">
+		  					<td id="list_gameId" style="display:none"><?php echo $game->getId(); ?></td>
+					    	<td id="list_title" class="gameRow smallContent gameRowData"><?php echo $game->getName(); ?>&nbsp;&nbsp;&nbsp;</td>
+                            <td id="list_category" class="gameRow smallContent gameRowData"><?php echo Application_Model_Category::find($game->getCategoryId())->getName(); ?></td>
+				    		<td id="list_codename" class="gameRow smallContent gameRowData"><?php echo $game->getCodeName(); ?></td>
+					    	<td id="list_version" class="gameRow smallContent gameRowData"><?php echo "{$game->getVersionMajor()}.{$game->getVersionMinor()}.{$game->getVersionPatch()}"; ?></td>
+					    	<td id="list_description" class="gameRow smallContent gameRowData"><?php echo $game->getDescription(); ?></td>
+					    	<td class="smallContent"><button class="gameRowData button deleteGame">Delete</button></td>
+					    	<td colspan=5 class="largeContent"></td>
+            			</tr>
+			    	<?php endforeach ?>
+		    	<?php endif; ?>
+			</table>
+		</div>
+		<style>
+            .addGameElem{
+                margin-left:50px;
+                margin-top:30px;
+            }
+		</style>
+		<div id=addFormContainer style="display:none;">
+			<form action="<?php echo $this->gameForm->getAction();?>"
+				    method="<?php echo $this->gameForm->getMethod() ?>"
+				    id="<?php echo $this->gameForm->getId() ?>"
+				    class="<?php echo $this->gameForm->getAttrib('class') ?>"  enctype="multipart/form-data" >
+				<?php echo $this->gameForm->csrf?>
+				<input id="gameId" name="gameId" type=hidden></input>
+				<div style="clear:both"></div>
+				<div class="clearfix">
+					<div class="sourceField">
+						<div class=addGameElem>
+							<?php echo $this->gameForm->title?>
+						</div>
+                        <div class=addGameElem>
+                            <?php echo $this->gameForm->category?>
+                        </div>
+						<div class=addGameElem>
+							<?php echo $this->gameForm->codename?>
+						</div>
+						<div class=addGameElem>
+							<?php echo $this->gameForm->version?>
+						</div>
+						<div class=addGameElem>
+							<?php echo $this->gameForm->file?>
+						</div>
+                        <div class=addGameElem>
+                            <?php echo $this->gameForm->preview?>
+                        </div>
+                        <div class=addGameElem>
+                            <?php echo $this->gameForm->previewPuzzle?>
+                        </div>
+					</div>
+					<div class="sourceField sourceField2">
+						<div class=addGameElem>
+							<?php echo $this->gameForm->description?>
+						</div>
+						<div class=addGameElem>
+				            <div id='submitRss' class="sourceFieldURL" style="display:block">
+								<?php echo $this->gameForm->submit?>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</form>
+		</div>
+		
+	</section>
+	<script type="text/javascript" src="/js/jquery/jquery-ui-1.9.2/ui/minified/jquery-ui.min.js"></script>
+	
+<script type="text/javascript" >
+	$(document).ready(function() {
+		$(".deleteGame").click(function(){
+			$(this).parent().parent().remove();
+		});
+		$("#addGame").click(function(){
+			$('.smallContent').show();
+			$('.largeContent').hide();
+			$('.largeContent').html("");
+			$('#addGame').hide();
+			$('#newGameFormContainer').html($('#addFormContainer').html());
+			$(this).parent().find(".largeContent").find("#gameId").val(-1);
+			$(this).parent().find(".largeContent").find("#title").val("");
+			$(this).parent().find(".largeContent").find("#codename").val("");
+			$(this).parent().find(".largeContent").find("#version").val("0.0.1");
+			$(this).parent().find(".largeContent").find("#description").val("");
+			$('#newGameFormContainer').show();
+		});
+		$(".gameRow").click(function(){
+			$('#addGame').show();
+			$('#newGameFormContainer').hide();
+			$('.smallContent').show();
+			$('.largeContent').hide();
+			$('.largeContent').html("");
+			$(this).parent().find(".smallContent").hide();
+			$(this).parent().find(".largeContent").html($('#addFormContainer').html());
+			$(this).parent().find(".largeContent").show();
+			$(this).parent().find(".largeContent").find("#gameId").val($(this).parent().find('#list_gameId').html());
+			$(this).parent().find(".largeContent").find("#title").val($(this).parent().find('#list_title').html());
+            $(this).parent().find(".largeContent").find("#category").val($(this).parent().find('#list_category').html());
+			$(this).parent().find(".largeContent").find("#codename").val($(this).parent().find('#list_codename').html());
+			$(this).parent().find(".largeContent").find("#version").val($(this).parent().find('#list_version').html());
+			$(this).parent().find(".largeContent").find("#description").val($(this).parent().find('#list_description').html());
+		});
+	});
+</script>

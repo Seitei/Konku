@@ -1,0 +1,138 @@
+@charset "utf-8";
+/* -----------------------
+RESET STYLES
+----------------------- */
+html, body{font-family:sans-serif;}
+
+
+
+.credentialsBox{
+	font-size:150%;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	color: #aabbcc;
+}
+
+.credentialsBox a{
+	text-decoration: none;
+	color: #8899ff;
+	display:block;
+}
+
+.credentialsItem{
+	margin-top:5px;
+	margin-bottom:5px;
+	margin-left:10px;
+	margin-right:10px;
+}
+
+.credentialsItem input{
+	border-radius:10px;
+	width:150px;
+	background-color: #aab6dd;
+	color: white;
+	font-family: 'Audiowide', cursive;
+	padding:5px;
+    border:0 none;
+}
+
+.credentialsItem input[type='button']{
+	width:160px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+.credentialsItem span{
+	color: red;
+	font-size:80%;
+}
+
+
+.pageContent{
+	height:700px;
+}
+
+.gameList{
+	background-color: #224477;
+	width: 770px;
+	height:100%;
+	margin-left:30px;
+	margin-top:30px;
+	//border-width: 1px;
+	border-radius: 10px;
+	border-color: black;
+	border-style: solid;
+	float:left;
+}
+
+.gameView{
+	margin:30px;
+}
+
+.backBtn{
+	margin:30px;
+}
+
+.gameList.moved{
+	position:fixed;
+	top:-5000px;
+}
+
+.gameList.options{
+	width: 200px;
+}
+
+.gameList.playing{
+	width: 300px;
+}
+
+
+/*normal item*/
+.gameList .item{
+	width: 230px;
+	height: 180px;
+	border-style: solid;
+	border-radius: 10px;
+	//border-width: 1px;
+	background-color: #99aacc;
+	margin-left:20px;
+	margin-top:20px;
+	float:left;
+	cursor: pointer;
+}
+.gameList .item .image{
+	width: 210px;
+	height: 130px;
+	margin: 10px;
+	background-color: #061633;
+	border-radius: 10px;
+}
+.gameList .item .name{
+	font-size: 1.3em;
+	font-weight: bold;
+	color: white;
+	margin: auto;
+	text-align: center;
+	width: 80%;
+}
+
+
+/*playing item*/
+.gameList.playing .item{
+	width: 280px;
+	height: 80px;
+	margin:10px;
+}
+.gameList.playing .item .image{
+	width: 90px;
+	height: 60px;
+	margin: 10px;
+	float:left;
+}
+.gameList.playing .item .name{
+	text-align: left;
+	margin-top: 10px;
+	width: 200px;
+}

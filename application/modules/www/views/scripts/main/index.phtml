@@ -1,0 +1,529 @@
+<div class="page">
+    <div class="userBar">
+        <img class="logo" src="/images/konku-logo.png" />
+        <div class="userInfo">
+            <img src="/images/device.png" />
+            <img src="/images/alerts.png" />
+            <img src="/images/profile.png" />
+            <img src="/images/arrow-down.png" />
+            Me
+        </div>
+    </div>
+    <div class="content">
+        <div class="taskBar">
+            <div class="tasks">
+                <a>Home</a>
+                <a>About</a>
+                <a>News</a>
+                <a>Contribute</a>
+                <a class="active">Play</a>
+            </div>
+        </div>
+        <div class="playArea">
+            <div class="categoriesBar">
+                <div class="categories">
+                    <?php $categories = Application_Model_Category::fetchAll();?>
+                    <?php foreach($categories as $index => $category): ?>
+                    <img <?php echo $index == 0 ? 'class="active"' : ''; ?> src="/images/<?php echo $category->getName(); ?>_icon.png" />
+                    <?php endforeach ?>
+                    <div class="mark"></div>
+                </div>
+            </div>
+            <div class="playBoard">
+                <div class="gamelist">
+                    <?php $categories = Application_Model_Category::fetchAll();?>
+                    <?php foreach($categories as $index => $category): ?>
+                    <div class="category" style="display: <?php echo $index == 0 ? 'block' : 'none'; ?>">
+                        <?php $games = Application_Model_Game::fetchAllByCategoryId($category->getId());?>
+                        <?php foreach($games as $gameIndex => $game): ?>
+                        <div class="listedGame" style="margin-left:<?php echo $gameIndex * 100; ?>px;z-index:<?php echo 100 - $gameIndex; ?>">
+                            <img src="/images/bs_icon.png"/>
+                            <div class="puzzleIcon" style="display:none">
+                                <img src="/images/bs_puzzle_icon.png"/>
+                                <img src="/images/free_slot_puzzle.png" class="loadingMask"/>
+                                <img src="/images/loading_puzzle.png" class="status"/>
+                            </div>
+                            <div class="file" style = "display: none;"><?php echo "{$game->getCodeName()}_{$game->getVersionMajor()}_{$game->getVersionMinor()}_{$game->getVersionPatch()}.swf" ?></div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <div id="gameView" class="moved">
+                    <div id="gamePlay">
+                        <h1>No Game Selected</h1>
+                        <p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="rightBar">
+            <div class="myGames">
+                <?php for($i = 0; $i < 7; $i++): ?>
+                <div class="gameSlot empty">
+                    <img src="/images/free_slot_puzzle.png"/>
+                    <div class="playerSlots">
+                    </div>
+                </div><br>
+                <?php endfor; ?>
+            </div>
+        </div>
+        <img class="bottomImage" src="/images/pieces.png"/>
+    </div>
+</div>
+<script>
+    var game;
+    var games = {}
+
+    var gameConstructor = function(_id){
+        var state = "loading";
+        var view;
+        return {
+            getState:function(){
+                return state;
+            },
+            getView:function(){
+                return view;
+            },
+            setView:function(_view){
+                view = _view;
+            },
+            getId:function(){
+                return _id;
+            }
+        };
+    };
+
+
+    var asConnector = (function(){
+        return {
+            openGame:function(id, name, file){
+                getFlashMovie("gamePlay").AS_loadGame(id, name, file);
+            },
+            showGame:function(id){
+                getFlashMovie("gamePlay").AS_showGame(id);
+            }
+        };
+    })();
+
+
+    var JSListener = (function(){
+        return {
+            gameLoadProgress: function (gameId, percent) {
+                if(games.hasOwnProperty(gameId)) {
+                    var game = games[gameId];
+                    myGames.setLoadProgress(game.getView(), percent);
+                    return true;
+                }
+                return false;
+            },
+            playerConnect: function (gameId, playerName, isLoading) {
+                if(games.hasOwnProperty(gameId)) {
+                    var game = games[gameId];
+                    myGames.addPlayer(game.getView(), playerName);
+                    myGames.setPlayerState(game.getView(), playerName, isLoading);
+                    return true;
+                }
+                return false;
+            },
+            playerLoaded: function(gameId, playerName, isLoading) {
+                if(games.hasOwnProperty(gameId)) {
+                    var game = games[gameId];
+                    myGames.setPlayerState(game.getView(), playerName, isLoading);
+                    return true;
+                }
+                return false;
+            },
+            playerDisconnect: function (gameId, playerName) {
+                var game = games[id];
+                //myGames.setLoadProgress(game.getView(), value);
+            },
+            playerTurn: function (gameId, playerName) {
+                var game = games[id];
+                //myGames.setLoadProgress(game.getView(), value);
+            },
+            gameEnded: function (id, value) {
+            },
+        }
+    })();
+
+    var gameList = (function(){
+        return {
+            openGame:function(view){
+                var gameSlot = myGames.getLastSlot();
+                if(gameSlot.length > 0){
+                    myGames.addGame(view, gameSlot);
+                }
+            }
+        };
+    })();
+
+    var myGames = (function(){
+        return {
+            getLastSlot:function(){
+                return $(".content .myGames").find(".gameSlot.empty").first();
+            },
+            updatePlayersState:function(states){
+                console.log(states);
+            },
+            addGame:function(source, slot){
+                var view = source.find(".puzzleIcon").clone();
+                view.show();
+
+                gameId++;
+                var gameName = "battleship" + gameId;
+
+                game = gameConstructor(gameId);
+                games[gameName] = game;
+                game.setView(view);
+                view.append('<input type="hidden" value='+gameName+'></input>');
+                startGame(view.find(".file").html(), gameName);
+
+                var newPosX = source.offset().left - slot.offset().left;
+                var newPosY = source.offset().top - slot.offset().top;
+                slot.append(view);
+                slot.removeClass("empty").addClass("active");
+                view.css({left:newPosX.toString()+"px",top:newPosY.toString()+"px"});
+                TweenLite.to(view,.75, {top:"0px", left: "0px", opacity:1, zIndex: 100, onComplete:function(view){
+                    slot.find(".playerSlots").html("");
+                    for(var i = 0; i < 4; i++){
+                        var playerSlot = $('<div class="playerSlot empty"></div>');
+                        slot.find(".playerSlots").append(playerSlot);
+                    }
+                }, onCompleteParams:[view]});
+
+                //asConnector.openGame(gameId, "game name", $(this).find(".file").html());
+
+                view.click(function(){
+                    $(".gamelist").hide();
+
+                    $(".categoriesBar .categories img").removeClass("active");
+                    $(".categoriesBar .categories .mark").hide();
+
+                    if($("#gameView").hasClass("moved")){
+                        $("#gameView").toggleClass("moved");
+                    }
+//                    asConnector.showGame($(this).find("input").val());
+                });
+            },
+            setLoadProgress:function(view, value){
+                var val = Math.round((value / 100) * 91);
+                if(value == 100){
+                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)",onComplete:function(view){
+                        myGames.setMainState(view,"/images/no_players_yet_puzzle.png");
+
+                    }, onCompleteParams:[view]});
+                } else {
+                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)"});
+                }
+            },
+            addPlayer:function(view, name){
+                var emptySlot = view.parent().find(".playerSlot.empty").first();
+                if(emptySlot.size() > 0){
+                    emptySlot.removeClass("empty").attr("id", name);
+                }
+            },
+            setPlayerState:function(view, name, isLoading){
+                var player = view.parent().find("#"+name);
+                if(player.size() > 0) {
+                    if (isLoading) {
+                        player.removeClass("empty").removeClass("ready").addClass("loading");
+                    } else {
+                        player.removeClass("empty").removeClass("loading").addClass("ready");
+                    }
+                    if (view.parent().find(".playerSlot.empty,.playerSlot.loading").size() == 0) {
+                        myGames.setMainState(view, "/images/ready_puzzle.png");
+                    } else if (view.parent().find(".playerSlot.loading,.playerSlot.ready").size() == 1) {
+                        myGames.setMainState(view, "/images/waiting_puzzle.png");
+                    }
+                }
+            },
+            removePlayer:function(view, value){
+                var val = Math.round((value / 100) * 91);
+                if(value == 100){
+                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)",onComplete:function(view){
+                        view.find(".loadingMask").remove();
+                        myGames.setMainState(view,"/images/no_players_yet_puzzle.png");
+                    }, onCompleteParams:[view]});
+                } else {
+                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)"});
+                }
+            },
+            setMainState:function(view, image){
+                var frame = $('<img src="'+image+'" class="status"/>');
+                frame.css({opacity: 0});
+                TweenLite.to(frame, 1, {opacity: 1});
+                view.append(frame);
+                view.find(".status").first().remove();
+            }
+        };
+    })();
+
+    var gameId = 0;
+    var flashvars = {};
+    var params = {wmode: "direct", allowScriptAccess:"always"};
+    var attributes = {};
+    swfobject.embedSWF("/ce3m.swf", "gamePlay", "700", "600", "11.7.0", "/swf/expressInstall.swf", flashvars, params, attributes);
+    function getFlashMovie(movieName) {
+        var isIE = navigator.appName.indexOf("Microsoft") != -1;
+        return (isIE) ? window[movieName] : document[movieName];
+    }
+
+    function startGame(file, id){
+        var gameView = $("#gamePlayContainer").children(":first").clone();
+        gameView.attr("id", gameView.attr("id") + id);
+        var gamePlay = gameView.children(":first");
+        gamePlay.attr("id", gamePlay.attr("id") + id);
+        $("#gameViewContainer").append(gameView);
+    }
+
+
+    $(".gamelist .listedGame").click(function(){
+        gameList.openGame($(this));
+    });
+
+    var lastCategory;
+    $(".categoriesBar .categories img").click(function(){
+
+        $(".gamelist").show();
+        $(".categoriesBar .categories .mark").show();
+        if(!$("#gameView").hasClass("moved")){
+            $("#gameView").toggleClass("moved");
+        }
+
+        $(".categoriesBar .categories img").removeClass("active");
+        $(this).addClass("active");
+        var newPos = $(this).parent().position().left - $(this).position().left;
+        TweenLite.to($(".categoriesBar .categories .mark"),.75, {marginLeft:(-newPos - 7).toString()+"px"});
+        $(".gamelist .category").hide();
+        $(".gamelist .category").css({marginLeft:"0px", opacity:1});
+        var gameCategory = $(".gamelist").children().eq($(this).index());
+        gameCategory.show().css({opacity:0, marginLeft:"-700px"});
+        TweenLite.to(gameCategory,.75, {marginLeft:"0px", opacity: 1});
+        if(lastCategory){
+            lastCategory.show();
+            TweenLite.to(lastCategory,.75, {marginLeft:"700px", opacity: 0});
+        }
+        lastCategory = gameCategory;
+    });
+</script>
+<br><br><br><br><br><br><br><br>
+
+<link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
+
+<div class="pageContent">
+	<div class="gameList options">
+		<div style="display: block" id='userDiv' class='credentialsBox'>
+			<p><?php echo $this->accountName; ?></p>
+		<?php if($this->isGuestUser):?>
+			<a href="#" id='showLogin'>Login</a>
+			<a href="#" id='createAccount'>Create Account</a>
+		</div>
+			<div style="display: none" id='loginDiv' class='credentialsBox'>
+				<div class='credentialsItem'>
+					<label>username:</label>
+					<input id=username class="editable"></input>
+					<span id=usernameError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<label>password:</label>
+					<input id=password class="editable" type="password"></input>
+					<span id=passwordError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<input id=login type="button" value="Login"/>
+					<span id=loginError class="errorMsg" style="display: none"></span>
+				</div>
+				<a href="#">Forgot Credentials</a>
+				<a href="#" class='cancel'>Cancel</a>
+			</div>
+			<div style="display: none" id='register' class='credentialsBox'>
+				<div class='credentialsItem'>
+					<label>username:</label>
+					<input id=cUsername class="editable"></input>
+					<span id=cUsernameError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<label>email:</label>
+					<input id=cEmail class="editable"></input>
+					<span id=cEmailError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<label>password:</label>
+					<input id=cPassword class="editable" type="password"></input>
+					<span id=cPasswordError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<label>retype password:</label>
+					<input id=cPassword2 class="editable" type="password"></input>
+					<span id=cPassword2Error class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<label>accept terms:</label>
+					<input id=cAcceptTerms type="checkbox"/>
+					<span id=cAcceptTermsError class="errorMsg" style="display: none"></span>
+				</div>
+				<div class='credentialsItem'>
+					<input id=cRegister type="button" value="Register"/>
+					<span id=cRegisterError class="errorMsg" style="display: none"></span>
+				</div>
+				<a href="#" class='cancel'>Cancel</a>
+			</div>
+		<?php else:?>
+			<a href="#" id='logout'>Logout</a>
+		</div>
+		<?php endif;?>
+	</div>
+	<div id="gameList" class="gameList">
+		<?php foreach (Application_Model_Game::fetchAll() as $game): ?>
+			<div class="item">
+				<div class="image"></div>
+				<div class="name"><?php echo $game->getName() ?></div>
+				<div class="file" style = "display: none;"><?php echo "{$game->getCodeName()}_{$game->getVersionMajor()}_{$game->getVersionMinor()}_{$game->getVersionPatch()}.swf" ?></div>
+			</div>
+	    <?php endforeach ?>
+	</div>
+	<div id="playingList" class="gameList playing">
+	
+	</div>
+</div>
+<div id="itemContainer" style="display: none;">
+	<div class="item">
+		<div class="id" style = "display: none;"></div>
+		<div class="image"></div>
+		<div class="name"></div>
+		<div class="file" style = "display: none;"></div>
+	</div>
+</div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+	$('#logout').click(function(){
+		$.post('/post/logout',{}).done(function(data){
+			window.location.replace('post');
+		});
+		return false;
+	});
+
+	$('.cancel').click(function(){
+		$('#loginDiv').hide();
+		$('#showLogin').show();
+		$('#loginDiv .editable').val('');
+		$('.errorMsg').hide();
+		$('#createAccount').show();
+		$('#register').hide();
+		$('#register .editable').val('');
+		$('#cAcceptTerms').prop("checked", false);
+		return false;
+	});
+
+	$('#createAccount').click(function(){
+		$('#register').show();
+		$('#loginDiv').hide();
+		$('#showLogin').show();
+		$('#createAccount').hide();
+		$('#loginDiv .editable').val('');
+		$('.errorMsg').hide();
+		return false;
+	});
+	
+	$('#showLogin').click(function(){
+		$('#loginDiv').show();
+		$('#showLogin').hide();
+		$('#createAccount').show();
+		$('#register').hide();
+		$('#register .editable').val('');
+		$('#cAcceptTerms').prop("checked", false);
+		$('.errorMsg').hide();
+		return false;
+	});
+
+	$('#login').click(function(){
+		$('.errorMsg').hide();
+		var username = $('#username').val();
+		var password = $('#password').val();
+		if(!username){
+			$('#usernameError').show();
+			$('#usernameError').html("Enter a valid username");
+		}
+		if(!password){
+			$('#passwordError').show();
+			$('#passwordError').html("Enter a valid password");
+		}
+		if($('.errorMsg:visible').length == 0){
+			$('#login').attr('disabled','disabled');
+			$.post('/post/login',{username: username, password: password }).done(function(data){
+				if(data){
+					$('#loginError').show();
+					$('#loginError').html(data);
+					$('#login').removeAttr('disabled');
+				} else {
+					window.location.replace('post');
+				}
+			});
+		}
+		return false;
+	});
+	
+	$('#cRegister').click(function(){
+		$('.errorMsg').hide();
+		var username = $('#cUsername').val();
+		var email = $('#cEmail').val();
+		var password = $('#cPassword').val();
+		var password2 = $('#cPassword2').val();
+		var acceptTerms = $('#cAcceptTerms').prop('checked');
+		if(!username){
+			$('#cUsernameError').show();
+			$('#cUsernameError').html("Enter a valid username");
+		}
+		if(!email){
+			$('#cEmailError').show();
+			$('#cEmailError').html("Enter a valid email");
+		}
+		if(!password){
+			$('#cPasswordError').show();
+			$('#cPasswordError').html("Enter a valid password");
+		}
+		if(password != password2){
+			$('#cPassword2Error').show();
+			$('#cPassword2Error').html("Passwords don't match");
+		}
+		if(!acceptTerms){
+			$('#cAcceptTermsError').show();
+			$('#cAcceptTermsError').html("You must accept the terms");
+		}
+		if($('.errorMsg:visible').length == 0){
+			$('#cRegister').attr('disabled','disabled');
+			$.post('/post/register',{username: username, email: email, password: password, password2: password2, acceptTerms: acceptTerms }).done(function(data){
+				if(data){
+					$('#cRegisterError').show();
+					$('#cRegisterError').html(data);
+				} else {
+					$('#register').hide();
+					$('#loginDiv').show();
+					$('#register .editable').val('');
+					$('#cAcceptTerms').prop("checked", false);
+				}
+				$('#cRegister').removeAttr('disabled');
+			});
+		}
+		return false;
+	});
+
+	$('#gotoGameList').click(function(){
+		$("#gameList").show();
+
+		if(!$("#gameView").hasClass("moved")){
+			$("#gameView").toggleClass("moved");
+		}
+	});
+
+
+	
+
+});
+
+</script>
