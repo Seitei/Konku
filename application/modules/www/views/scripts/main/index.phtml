@@ -1,3 +1,35 @@
+
+<div id="test" style="padding:20px;background-color: #ffffff"></div><style>input{width:80px;border: 0;background-color: #f8f8f8}</style>
+<script>
+    $('#test').append($('<div></div>').append($('<span>JSListener.gameLoadProgress(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="100"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        JSListener.gameLoadProgress($(this).parent().find('#1').val(),$(this).parent().find('#2').val());
+    })));
+
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerConnect(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input id=3 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        if(JSListener.playerConnect($(this).parent().find('#1').val(),$(this).parent().find('#2').val(),parseInt($(this).parent().find('#3').val())))
+            $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
+    })));
+
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerLoaded(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input id=3 value="0"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        if(JSListener.playerLoaded($(this).parent().find('#1').val(),$(this).parent().find('#2').val(),parseInt($(this).parent().find('#3').val())))
+            $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
+    })));
+
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerDisconnect(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        if(JSListener.playerDisconnect($(this).parent().find('#1').val(),$(this).parent().find('#2').val()))
+            $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
+    })));
+
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerTurn(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        if(JSListener.playerTurn($(this).parent().find('#1').val(),$(this).parent().find('#2').val()))
+            $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
+    })));
+
+    $('#test').append($('<div></div>').append($('<span>JSListener.gameFinish(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+        JSListener.gameFinish($(this).parent().find('#1').val(),$(this).parent().find('#2').val());
+    })));
+</script>
+
 <div class="page">
     <div class="userBar">
         <img class="logo" src="/images/konku-logo.png" />
@@ -120,27 +152,39 @@
             playerConnect: function (gameId, playerName, isLoading) {
                 if(games.hasOwnProperty(gameId)) {
                     var game = games[gameId];
-                    myGames.addPlayer(game.getView(), playerName);
-                    myGames.setPlayerState(game.getView(), playerName, isLoading);
-                    return true;
+                   if(myGames.addPlayer(game.getView(), playerName)) {
+                       myGames.setPlayerState(game.getView(), playerName, isLoading);
+                       return true;
+                   }
                 }
                 return false;
             },
             playerLoaded: function(gameId, playerName, isLoading) {
                 if(games.hasOwnProperty(gameId)) {
                     var game = games[gameId];
-                    myGames.setPlayerState(game.getView(), playerName, isLoading);
-                    return true;
+                    if(myGames.setPlayerState(game.getView(), playerName, isLoading)){
+                        return true;
+                    }
                 }
                 return false;
             },
             playerDisconnect: function (gameId, playerName) {
-                var game = games[id];
-                //myGames.setLoadProgress(game.getView(), value);
+                if(games.hasOwnProperty(gameId)) {
+                    var game = games[gameId];
+                    if(myGames.removePlayer(game.getView(), playerName)){
+                        return true;
+                    }
+                }
+                return false;
             },
             playerTurn: function (gameId, playerName) {
-                var game = games[id];
-                //myGames.setLoadProgress(game.getView(), value);
+                if(games.hasOwnProperty(gameId)) {
+                    var game = games[gameId];
+                    if(myGames.turnPlayer(game.getView(), playerName)){
+                        return true;
+                    }
+                }
+                return false;
             },
             gameEnded: function (id, value) {
             },
@@ -159,6 +203,18 @@
     })();
 
     var myGames = (function(){
+        function isGameEmpty(view){
+            return view.parent().find(".playerSlot.waiting,.playerSlot.loading,.playerSlot.ready").size() == 0;
+        }
+        function getPlayerByName(view, name){
+            return view.parent().find("#"+name);
+        }
+        function getAllLoadedPlayers(view){
+            return view.parent().find(".playerSlot.waiting,.playerSlot.ready");
+        }
+        function setPlayerState(player, state){
+            player.removeClass("empty").removeClass("waiting").removeClass("loading").removeClass("ready").addClass(state);
+        }
         return {
             getLastSlot:function(){
                 return $(".content .myGames").find(".gameSlot.empty").first();
@@ -210,8 +266,9 @@
                 var val = Math.round((value / 100) * 91);
                 if(value == 100){
                     TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)",onComplete:function(view){
-                        myGames.setMainState(view,"/images/no_players_yet_puzzle.png");
-
+                        if(isGameEmpty(view)) {
+                            myGames.setMainState(view, "/images/no_players_yet_puzzle.png");
+                        }
                     }, onCompleteParams:[view]});
                 } else {
                     TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)"});
@@ -221,45 +278,66 @@
                 var emptySlot = view.parent().find(".playerSlot.empty").first();
                 if(emptySlot.size() > 0){
                     emptySlot.removeClass("empty").attr("id", name);
+                    return true;
                 }
+                return false;
             },
             setPlayerState:function(view, name, isLoading){
-                var player = view.parent().find("#"+name);
+                var player = getPlayerByName(view, name);
                 if(player.size() > 0) {
-                    if (isLoading) {
-                        player.removeClass("empty").removeClass("ready").addClass("loading");
-                    } else {
-                        player.removeClass("empty").removeClass("loading").addClass("ready");
-                    }
-                    if (view.parent().find(".playerSlot.empty,.playerSlot.loading").size() == 0) {
-                        myGames.setMainState(view, "/images/ready_puzzle.png");
-                    } else if (view.parent().find(".playerSlot.loading,.playerSlot.ready").size() == 1) {
+                    if (isGameEmpty(view)) {
                         myGames.setMainState(view, "/images/waiting_puzzle.png");
                     }
+                    if (isLoading) {
+                        setPlayerState(player, "loading");
+                    } else {
+                        setPlayerState(player, "waiting")
+                    }
+                    return true;
                 }
+                return false;
             },
-            removePlayer:function(view, value){
-                var val = Math.round((value / 100) * 91);
-                if(value == 100){
-                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)",onComplete:function(view){
-                        view.find(".loadingMask").remove();
-                        myGames.setMainState(view,"/images/no_players_yet_puzzle.png");
-                    }, onCompleteParams:[view]});
-                } else {
-                    TweenLite.to(view.find(".loadingMask"),1, {clip: "rect(0px,200px,200px,"+val+"px)"});
+            removePlayer:function(view, name){
+                var player = getPlayerByName(view, name);
+                if(player.size() > 0) {
+                    setPlayerState(player, "empty");
+                    player.removeAttr("id");
+                    if (isGameEmpty(view)) {
+                        myGames.setMainState(view, "/images/no_players_yet_puzzle.png");
+                    }
+                    return true;
                 }
+                return false;
+            },
+            turnPlayer:function(view, name){
+                var player = getPlayerByName(view, name);
+                if(player.size() > 0 || name == accountName) {
+                    myGames.setMainState(view, "/images/waiting_puzzle.png");
+                    setPlayerState(getAllLoadedPlayers(view), "waiting");
+                    if (name == accountName) {
+                        myGames.setMainState(view, "/images/ready_puzzle.png");
+                    } else {
+                        setPlayerState(player, "ready");
+                    }
+                    return true;
+                }
+                return false;
             },
             setMainState:function(view, image){
-                var frame = $('<img src="'+image+'" class="status"/>');
-                frame.css({opacity: 0});
-                TweenLite.to(frame, 1, {opacity: 1});
-                view.append(frame);
-                view.find(".status").first().remove();
+                var original = view.find(".status").first();
+                if(original.attr("src") != image) {
+                    var frame = $('<img src="' + image + '" class="status"/>');
+                    frame.css({opacity: 0});
+                    original.before(frame);
+                    TweenLite.to(frame,.4, {opacity: 1});
+                    TweenLite.to(original,.4, {opacity: 0, onComplete:function(item){item.remove()}, onCompleteParams:original});
+                }
             }
         };
     })();
 
     var gameId = 0;
+    var accountName = "player";
     var flashvars = {};
     var params = {wmode: "direct", allowScriptAccess:"always"};
     var attributes = {};
