@@ -4,7 +4,7 @@ class Application_Model_CategoryMapper extends Application_Model_BaseMapper
 {
     protected $_dbTable = 'Application_Model_DbTable_Category';
     
-    public function save(Application_Model_BaseModelWithAudit &$model)
+    public function save(Application_Model_BaseModel &$model)
     {
         parent::save($model);
         $data = array(

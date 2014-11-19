@@ -36,15 +36,11 @@ class Www_MainController extends Zend_Controller_Action
 			$account = Application_Model_Account::findByIp($ip);
 			if(!$account){
 				$account = new Application_Model_Account();
-				$account->setActivated(0);
-				$account->setBio($ip);
+				$account->setEmail($ip);
 				$account->setUsername(" ");
-				$account->setEmail(" ");
 				$account->setPassword(" ");
-				$account->setState("INITIAL");
 				Application_Model_Account::getMapper()->save($account);
 				$account->setUsername("guest{$account->getId()}");
-				$account->setEmail("guest{$account->getId()}@email.com");
 				Application_Model_Account::getMapper()->save($account);
 			}
 			$this->view->isGuestUser = true;
@@ -53,6 +49,9 @@ class Www_MainController extends Zend_Controller_Action
 		}
 		$_SESSION['accountId'] = $account->getId();
 		$this->view->accountName = $account->getUsername();
+        $this->view->swfName = "";
+        $this->view->swfWidth = "700";
+        $this->view->swfHeight = "600";
 		
 	}
 	

@@ -78,6 +78,8 @@ abstract class Application_Model_BaseMapper {
     	return $query;
     }
 
+
+
     protected function saveOrUpdate(Application_Model_BaseModel $model, $data)
     { 
         if (null === ($id = $model->getId())) {

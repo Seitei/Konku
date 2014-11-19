@@ -1,16 +1,16 @@
 
-<div id="test" style="padding:20px;background-color: #ffffff"></div><style>input{width:80px;border: 0;background-color: #f8f8f8}</style>
+<div id="test" style="padding:20px;background-color: #ffffff"></div><style>input{width:85px;border: 0;background-color: #f8f8f8}input.numeric{width:30px;}</style>
 <script>
-    $('#test').append($('<div></div>').append($('<span>JSListener.gameLoadProgress(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="100"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+    $('#test').append($('<div></div>').append($('<span>JSListener.gameLoadProgress(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input class="numeric" id=2 value="100"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
         JSListener.gameLoadProgress($(this).parent().find('#1').val(),$(this).parent().find('#2').val());
     })));
 
-    $('#test').append($('<div></div>').append($('<span>JSListener.playerConnect(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input id=3 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerConnect(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input class="numeric"  id=3 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
         if(JSListener.playerConnect($(this).parent().find('#1').val(),$(this).parent().find('#2').val(),parseInt($(this).parent().find('#3').val())))
             $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
     })));
 
-    $('#test').append($('<div></div>').append($('<span>JSListener.playerLoaded(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input id=3 value="0"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+    $('#test').append($('<div></div>').append($('<span>JSListener.playerLoaded(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="player1"/><span>,</span><input class="numeric"  id=3 value="0"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
         if(JSListener.playerLoaded($(this).parent().find('#1').val(),$(this).parent().find('#2').val(),parseInt($(this).parent().find('#3').val())))
             $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
     })));
@@ -25,7 +25,7 @@
             $(this).parent().find('#2').val($(this).parent().find('#2').val()+"x");
     })));
 
-    $('#test').append($('<div></div>').append($('<span>JSListener.gameFinish(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input id=2 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
+    $('#test').append($('<div></div>').append($('<span>JSListener.gameFinish(</span>&nbsp;<input id=1 value="battleship1"/>&nbsp;<span>,</span>&nbsp;<input class="numeric"  id=2 value="1"/>&nbsp;<span>);</span>')).append($('<button>go</button>').click(function(){
         JSListener.gameFinish($(this).parent().find('#1').val(),$(this).parent().find('#2').val());
     })));
 </script>
@@ -38,7 +38,7 @@
             <img src="/images/alerts.png" />
             <img src="/images/profile.png" />
             <img src="/images/arrow-down.png" />
-            Me
+            <?php echo $this->accountName; ?>
         </div>
     </div>
     <div class="content">
@@ -104,6 +104,10 @@
     </div>
 </div>
 <script>
+
+    var accountName = "<?php echo $this->accountName; ?>";
+
+
     var game;
     var games = {}
 
@@ -125,15 +129,22 @@
             }
         };
     };
+/*
+    ExternalInterface.addCallback("loadGame", function(id, name, file){});
+    ExternalInterface.addCallback("changeGame", function(id){});
+    ExternalInterface.addCallback("init", function(name){});
+  */
 
-
-    var asConnector = (function(){
+    var ASConnector = (function(){
         return {
-            openGame:function(id, name, file){
-                getFlashMovie("gamePlay").AS_loadGame(id, name, file);
+            loadGame:function(id, name, file){
+                getFlashMovie("gamePlay").loadGame(id, name, file);
             },
-            showGame:function(id){
-                getFlashMovie("gamePlay").AS_showGame(id);
+            changeGame:function(id){
+                getFlashMovie("gamePlay").changeGame(id);
+            },
+            init:function(name){
+                getFlashMovie("gamePlay").init(name);
             }
         };
     })();
@@ -141,6 +152,9 @@
 
     var JSListener = (function(){
         return {
+            cratisConstructionComplete: function () {
+                ASConnector.playerName(accountName);
+            },
             gameLoadProgress: function (gameId, percent) {
                 if(games.hasOwnProperty(gameId)) {
                     var game = games[gameId];
@@ -193,7 +207,7 @@
 
     var gameList = (function(){
         return {
-            openGame:function(view){
+            changeGame:function(view){
                 var gameSlot = myGames.getLastSlot();
                 if(gameSlot.length > 0){
                     myGames.addGame(view, gameSlot);
@@ -248,7 +262,7 @@
                     }
                 }, onCompleteParams:[view]});
 
-                //asConnector.openGame(gameId, "game name", $(this).find(".file").html());
+                //ASConnector.loadGame(gameId, "game name", $(this).find(".file").html());
 
                 view.click(function(){
                     $(".gamelist").hide();
@@ -259,7 +273,7 @@
                     if($("#gameView").hasClass("moved")){
                         $("#gameView").toggleClass("moved");
                     }
-//                    asConnector.showGame($(this).find("input").val());
+//                    ASConnector.changeGame($(this).find("input").val());
                 });
             },
             setLoadProgress:function(view, value){
@@ -337,11 +351,17 @@
     })();
 
     var gameId = 0;
-    var accountName = "player";
+
+    $(document).ready(function() {
+        $("#accountName").html(accountName);
+        //ASConnector.playerName(accountName);
+    });
+
+
     var flashvars = {};
     var params = {wmode: "direct", allowScriptAccess:"always"};
     var attributes = {};
-    swfobject.embedSWF("/ce3m.swf", "gamePlay", "700", "600", "11.7.0", "/swf/expressInstall.swf", flashvars, params, attributes);
+    swfobject.embedSWF("/<?php echo $this->swfName; ?>", "gamePlay", "<?php echo $this->swfWidth; ?>", "<?php echo $this->swfHeight; ?>", "11.7.0", "/swf/expressInstall.swf", flashvars, params, attributes);
     function getFlashMovie(movieName) {
         var isIE = navigator.appName.indexOf("Microsoft") != -1;
         return (isIE) ? window[movieName] : document[movieName];
@@ -357,7 +377,7 @@
 
 
     $(".gamelist .listedGame").click(function(){
-        gameList.openGame($(this));
+        gameList.changeGame($(this));
     });
 
     var lastCategory;
@@ -384,224 +404,4 @@
         }
         lastCategory = gameCategory;
     });
-</script>
-<br><br><br><br><br><br><br><br>
-
-<link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
-
-<div class="pageContent">
-	<div class="gameList options">
-		<div style="display: block" id='userDiv' class='credentialsBox'>
-			<p><?php echo $this->accountName; ?></p>
-		<?php if($this->isGuestUser):?>
-			<a href="#" id='showLogin'>Login</a>
-			<a href="#" id='createAccount'>Create Account</a>
-		</div>
-			<div style="display: none" id='loginDiv' class='credentialsBox'>
-				<div class='credentialsItem'>
-					<label>username:</label>
-					<input id=username class="editable"></input>
-					<span id=usernameError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<label>password:</label>
-					<input id=password class="editable" type="password"></input>
-					<span id=passwordError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<input id=login type="button" value="Login"/>
-					<span id=loginError class="errorMsg" style="display: none"></span>
-				</div>
-				<a href="#">Forgot Credentials</a>
-				<a href="#" class='cancel'>Cancel</a>
-			</div>
-			<div style="display: none" id='register' class='credentialsBox'>
-				<div class='credentialsItem'>
-					<label>username:</label>
-					<input id=cUsername class="editable"></input>
-					<span id=cUsernameError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<label>email:</label>
-					<input id=cEmail class="editable"></input>
-					<span id=cEmailError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<label>password:</label>
-					<input id=cPassword class="editable" type="password"></input>
-					<span id=cPasswordError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<label>retype password:</label>
-					<input id=cPassword2 class="editable" type="password"></input>
-					<span id=cPassword2Error class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<label>accept terms:</label>
-					<input id=cAcceptTerms type="checkbox"/>
-					<span id=cAcceptTermsError class="errorMsg" style="display: none"></span>
-				</div>
-				<div class='credentialsItem'>
-					<input id=cRegister type="button" value="Register"/>
-					<span id=cRegisterError class="errorMsg" style="display: none"></span>
-				</div>
-				<a href="#" class='cancel'>Cancel</a>
-			</div>
-		<?php else:?>
-			<a href="#" id='logout'>Logout</a>
-		</div>
-		<?php endif;?>
-	</div>
-	<div id="gameList" class="gameList">
-		<?php foreach (Application_Model_Game::fetchAll() as $game): ?>
-			<div class="item">
-				<div class="image"></div>
-				<div class="name"><?php echo $game->getName() ?></div>
-				<div class="file" style = "display: none;"><?php echo "{$game->getCodeName()}_{$game->getVersionMajor()}_{$game->getVersionMinor()}_{$game->getVersionPatch()}.swf" ?></div>
-			</div>
-	    <?php endforeach ?>
-	</div>
-	<div id="playingList" class="gameList playing">
-	
-	</div>
-</div>
-<div id="itemContainer" style="display: none;">
-	<div class="item">
-		<div class="id" style = "display: none;"></div>
-		<div class="image"></div>
-		<div class="name"></div>
-		<div class="file" style = "display: none;"></div>
-	</div>
-</div>
-
-
-
-<script type="text/javascript">
-$(document).ready(function() {
-
-	$('#logout').click(function(){
-		$.post('/post/logout',{}).done(function(data){
-			window.location.replace('post');
-		});
-		return false;
-	});
-
-	$('.cancel').click(function(){
-		$('#loginDiv').hide();
-		$('#showLogin').show();
-		$('#loginDiv .editable').val('');
-		$('.errorMsg').hide();
-		$('#createAccount').show();
-		$('#register').hide();
-		$('#register .editable').val('');
-		$('#cAcceptTerms').prop("checked", false);
-		return false;
-	});
-
-	$('#createAccount').click(function(){
-		$('#register').show();
-		$('#loginDiv').hide();
-		$('#showLogin').show();
-		$('#createAccount').hide();
-		$('#loginDiv .editable').val('');
-		$('.errorMsg').hide();
-		return false;
-	});
-	
-	$('#showLogin').click(function(){
-		$('#loginDiv').show();
-		$('#showLogin').hide();
-		$('#createAccount').show();
-		$('#register').hide();
-		$('#register .editable').val('');
-		$('#cAcceptTerms').prop("checked", false);
-		$('.errorMsg').hide();
-		return false;
-	});
-
-	$('#login').click(function(){
-		$('.errorMsg').hide();
-		var username = $('#username').val();
-		var password = $('#password').val();
-		if(!username){
-			$('#usernameError').show();
-			$('#usernameError').html("Enter a valid username");
-		}
-		if(!password){
-			$('#passwordError').show();
-			$('#passwordError').html("Enter a valid password");
-		}
-		if($('.errorMsg:visible').length == 0){
-			$('#login').attr('disabled','disabled');
-			$.post('/post/login',{username: username, password: password }).done(function(data){
-				if(data){
-					$('#loginError').show();
-					$('#loginError').html(data);
-					$('#login').removeAttr('disabled');
-				} else {
-					window.location.replace('post');
-				}
-			});
-		}
-		return false;
-	});
-	
-	$('#cRegister').click(function(){
-		$('.errorMsg').hide();
-		var username = $('#cUsername').val();
-		var email = $('#cEmail').val();
-		var password = $('#cPassword').val();
-		var password2 = $('#cPassword2').val();
-		var acceptTerms = $('#cAcceptTerms').prop('checked');
-		if(!username){
-			$('#cUsernameError').show();
-			$('#cUsernameError').html("Enter a valid username");
-		}
-		if(!email){
-			$('#cEmailError').show();
-			$('#cEmailError').html("Enter a valid email");
-		}
-		if(!password){
-			$('#cPasswordError').show();
-			$('#cPasswordError').html("Enter a valid password");
-		}
-		if(password != password2){
-			$('#cPassword2Error').show();
-			$('#cPassword2Error').html("Passwords don't match");
-		}
-		if(!acceptTerms){
-			$('#cAcceptTermsError').show();
-			$('#cAcceptTermsError').html("You must accept the terms");
-		}
-		if($('.errorMsg:visible').length == 0){
-			$('#cRegister').attr('disabled','disabled');
-			$.post('/post/register',{username: username, email: email, password: password, password2: password2, acceptTerms: acceptTerms }).done(function(data){
-				if(data){
-					$('#cRegisterError').show();
-					$('#cRegisterError').html(data);
-				} else {
-					$('#register').hide();
-					$('#loginDiv').show();
-					$('#register .editable').val('');
-					$('#cAcceptTerms').prop("checked", false);
-				}
-				$('#cRegister').removeAttr('disabled');
-			});
-		}
-		return false;
-	});
-
-	$('#gotoGameList').click(function(){
-		$("#gameList").show();
-
-		if(!$("#gameView").hasClass("moved")){
-			$("#gameView").toggleClass("moved");
-		}
-	});
-
-
-	
-
-});
-
 </script>

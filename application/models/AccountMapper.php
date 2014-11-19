@@ -4,11 +4,9 @@ class Application_Model_AccountMapper extends Application_Model_BaseMapper
 {
     protected $_dbTable = 'Application_Model_DbTable_Account';
     
-    public function save(Application_Model_BaseModelWithAudit &$model)
+    public function save(Application_Model_BaseModel &$model)
     {
-    	
-        parent::save($model);
-        
+
         $data = array(
             'username'   => $model->getUsername(),
             'email'   => $model->getEmail(),
@@ -19,7 +17,7 @@ class Application_Model_AccountMapper extends Application_Model_BaseMapper
     }
     
     public function findByIp($ip){
-    	return $this->findByFilter( "bio = ?", $ip );
+    	return $this->findByFilter( "email = ?", $ip );
     }
     
     public function createModel($row)
